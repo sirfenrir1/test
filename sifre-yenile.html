@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Last Frame — Yeni Şifre</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="brand">
+      <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+      <span>THE LAST FRAME</span>
+    </a>
+
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="arsiv.html">Film Arşivi</a>
+      <a href="forum.html">Forum</a>
+      <a href="bagimsiz.html">Bağımsız Sinema</a>
+      <a href="fon.html">Film Fonu</a>
+    </nav>
+
+    <input type="search" id="search" class="search" placeholder="Film veya yönetmen ara..." aria-label="Film veya yönetmen ara">
+  </header>
+
+  <main class="auth-page">
+
+    <div class="auth-card">
+      <p class="eyebrow">THE LAST FRAME ÜYELİK</p>
+      <h2 style="font-weight:400;font-size:28px;margin:8px 0 18px;color:#e9dfcf">Yeni şifre belirle</h2>
+
+      <p class="auth-note" id="checking" style="margin:0">Bağlantı doğrulanıyor...</p>
+
+      <form id="reset-form" class="auth-form" hidden>
+        <label>Yeni şifre (en az 6 karakter)
+          <input type="password" id="n-pass" autocomplete="new-password" required>
+        </label>
+        <label>Yeni şifre (tekrar)
+          <input type="password" id="n-pass2" autocomplete="new-password" required>
+        </label>
+        <p class="form-error" id="n-error" hidden></p>
+        <button type="submit" class="gold-btn">ŞİFREYİ KAYDET</button>
+      </form>
+
+      <div id="invalid" hidden>
+        <p class="form-error">Bu bağlantı geçersiz ya da süresi dolmuş.</p>
+        <p class="auth-note"><a href="giris.html" class="inline-link">Giriş sayfasına dön</a> ve "Şifremi unuttum"dan yeni bir bağlantı iste.</p>
+      </div>
+
+      <p class="saved-note" id="done" hidden style="color:#c5a46a">Şifren güncellendi. Yönlendiriliyorsun...</p>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">THE LAST FRAME</div>
+    <p>Bağımsız dijital sinema platformu.</p>
+    <p>© <span id="year"></span> The Last Frame. Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="nav.js"></script>
+  <script>
+    const $ = s => document.querySelector(s);
+    let shown = false;
+
+    function showForm() {
+      if (shown) return;
+      shown = true;
+      $("#checking").hidden = true;
+      $("#invalid").hidden = true;
+      $("#reset-form").hidden = false;
+    }
+
+    // Supabase, e-postadaki bağlantıdan gelen kodu doğrulayınca bu olayı gönderir
+    sb.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") showForm();
+    });
+
+    // Olay kaçırılırsa: oturum açıldıysa ve adreste "recovery" varsa formu göster
+    setTimeout(async () => {
+      if (shown) return;
+      const { data: { session } } = await sb.auth.getSession();
+      const fromEmail = /type=recovery/.test(location.hash + location.search);
+      if (session && fromEmail) showForm();
+      else if (!shown) { $("#checking").hidden = true; $("#invalid").hidden = false; }
+    }, 1500);
+
+    $("#reset-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("#n-error"); err.hidden = true;
+      const p1 = $("#n-pass").value, p2 = $("#n-pass2").value;
+      if (p1.length < 6) { err.textContent = "Şifre en az 6 karakter olmalı."; err.hidden = false; return; }
+      if (p1 !== p2) { err.textContent = "Şifreler eşleşmiyor."; err.hidden = false; return; }
+
+      const { error } = await sb.auth.updateUser({ password: p1 });
+      if (error) { err.textContent = "Şifre güncellenemedi: " + error.message; err.hidden = false; return; }
+
+      $("#reset-form").hidden = true;
+      $("#done").hidden = false;
+      setTimeout(() => { location.href = "profil.html"; }, 1500);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Last Frame — Profilim</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="brand">
+      <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+      <span>THE LAST FRAME</span>
+    </a>
+
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="arsiv.html">Film Arşivi</a>
+      <a href="forum.html">Forum</a>
+      <a href="bagimsiz.html">Bağımsız Sinema</a>
+      <a href="fon.html">Film Fonu</a>
+    </nav>
+
+    <input type="search" id="search" class="search" placeholder="Film veya yönetmen ara..." aria-label="Film veya yönetmen ara">
+  </header>
+
+  <main class="profile-page">
+
+    <aside class="profile-card">
+      <div id="p-avatar" class="avatar-slot"></div>
+      <h1 id="p-name"></h1>
+      <p class="profile-meta" id="p-joined"></p>
+
+      <div class="profile-stats">
+        <div><b id="s-fav">0</b><span>Favori</span></div>
+        <div><b id="s-topics">0</b><span>Konu</span></div>
+        <div><b id="s-replies">0</b><span>Yanıt</span></div>
+      </div>
+
+      <form id="profile-form" class="profile-form">
+        <label>Hakkında
+          <textarea id="p-bio" rows="4" maxlength="240" placeholder="Kendinden kısaca bahset..."></textarea>
+        </label>
+        <div>
+          <span class="field-label">Avatar rengi</span>
+          <div class="swatches" id="p-colors"></div>
+        </div>
+        <button type="submit" class="gold-btn">KAYDET</button>
+        <p class="saved-note" id="p-saved" hidden>Kaydedildi.</p>
+      </form>
+
+      <div class="profile-actions">
+        <button class="ghost-btn" id="p-logout">ÇIKIŞ YAP</button>
+      </div>
+    </aside>
+
+    <section class="profile-content">
+
+      <div class="profile-tabs">
+        <button class="filter active" data-tab="favs">FAVORİ FİLMLER</button>
+        <button class="filter" data-tab="activity">FORUM ETKİNLİĞİ</button>
+      </div>
+
+      <div id="tab-favs">
+        <div class="fav-grid" id="fav-grid"></div>
+        <p class="empty" id="fav-empty" hidden>
+          Henüz favori filmin yok. <a href="arsiv.html" class="inline-link">Arşive göz at</a>, bir filmin detayında "Listeme ekle"ye bas.
+        </p>
+      </div>
+
+      <div id="tab-activity" hidden>
+        <h3 class="activity-title">Açtığın konular</h3>
+        <div id="act-topics" class="activity-list"></div>
+        <h3 class="activity-title">Yanıtların</h3>
+        <div id="act-replies" class="activity-list"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">THE LAST FRAME</div>
+    <p>Bağımsız dijital sinema platformu.</p>
+    <p>© <span id="year"></span> The Last Frame. Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="films.js"></script>
+  <script src="auth.js"></script>
+  <script src="nav.js"></script>
+  <script>
+    Auth.ready.then(async (u) => {
+      if (!u) { location.replace("giris.html?next=profil.html"); return; }
+      await loadRemoteFilms();
+      init();
+    });
+
+    function init() {
+      const $ = s => document.querySelector(s);
+      const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+      const fmt = t => new Date(t).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+
+      let user = Auth.current();
+      let color = user.color;
+
+      function renderHead() {
+        user = Auth.current();
+        $("#p-avatar").replaceChildren(Auth.avatar(user, "lg"));
+        $("#p-name").textContent = user.username;
+        $("#p-joined").textContent = "Üyelik: " + fmt(user.joined);
+        $("#p-bio").value = user.bio || "";
+        Auth.renderHeader();
+      }
+
+      // Renk seçici
+      const sw = $("#p-colors");
+      Auth.COLORS.forEach(c => {
+        const b = mk("button", "swatch" + (c === color ? " on" : ""));
+        b.type = "button";
+        b.style.background = c;
+        b.setAttribute("aria-label", "Renk " + c);
+        b.addEventListener("click", () => {
+          color = c;
+          sw.querySelectorAll(".swatch").forEach(x => x.classList.toggle("on", x === b));
+        });
+        sw.append(b);
+      });
+
+      $("#profile-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        try {
+          await Auth.update({ bio: $("#p-bio").value.trim(), color });
+          renderHead();
+          $("#p-saved").hidden = false;
+          setTimeout(() => $("#p-saved").hidden = true, 2000);
+        } catch (err) { alert("Kaydedilemedi: " + err.message); }
+      });
+
+      $("#p-logout").addEventListener("click", async () => { await Auth.logout(); location.href = "index.html"; });
+
+      // Favoriler
+      function renderFavs() {
+        user = Auth.current();
+        const grid = $("#fav-grid");
+        grid.innerHTML = "";
+        const list = films.filter(f => user.favorites.includes(f.id));
+        list.forEach(f => {
+          const card = mk("div", "fav-card");
+          card.style.setProperty("--c1", f.colors[0]);
+          card.style.setProperty("--c2", f.colors[1]);
+          const a = mk("a", "fav-poster");
+          a.href = "arsiv.html";
+          a.append(mk("span", "poster-year", f.year), mk("span", "fav-title", f.title));
+          const rm = mk("button", "fav-remove", "LİSTEDEN ÇIKAR");
+          rm.addEventListener("click", async () => {
+            try { await Auth.toggleFavorite(f.id); renderFavs(); }
+            catch (err) { alert("İşlem yapılamadı: " + err.message); }
+          });
+          card.append(a, mk("small", "", f.director + " · " + f.category), rm);
+          grid.append(card);
+        });
+        $("#fav-empty").hidden = list.length > 0;
+        $("#s-fav").textContent = list.length;
+      }
+
+      // Forum etkinliği (Supabase)
+      async function renderActivity() {
+        const [{ data: myTopics }, { data: myReplies }] = await Promise.all([
+          sb.from("topics").select("id, title, category, created_at, replies(count)").eq("user_id", user.id).order("created_at", { ascending: false }),
+          sb.from("replies").select("id, body, created_at, topic_id, topics(title)").eq("user_id", user.id).order("created_at", { ascending: false })
+        ]);
+        const topics = myTopics || [];
+        const replies = myReplies || [];
+
+        const fill = (box, items, build, emptyMsg) => {
+          box.innerHTML = "";
+          if (!items.length) { box.append(mk("p", "empty", emptyMsg)); return; }
+          items.forEach(i => box.append(build(i)));
+        };
+        const row = (href, title, meta, text) => {
+          const a = mk("a", "activity-row"); a.href = href;
+          a.append(mk("b", "", title), mk("small", "", meta));
+          if (text) a.append(mk("p", "", text.length > 140 ? text.slice(0, 140) + "…" : text));
+          return a;
+        };
+
+        fill($("#act-topics"), topics, t => row("forum.html?topic=" + t.id, t.title, `${t.category} · ${fmt(t.created_at)} · ${(t.replies && t.replies[0] ? t.replies[0].count : 0)} yanıt`), "Henüz konu açmadın.");
+        fill($("#act-replies"), replies, r => row("forum.html?topic=" + r.topic_id, "Re: " + (r.topics ? r.topics.title : "Silinmiş konu"), fmt(r.created_at), r.body), "Henüz yanıt yazmadın.");
+        $("#s-topics").textContent = topics.length;
+        $("#s-replies").textContent = replies.length;
+      }
+
+      // Sekmeler
+      document.querySelectorAll(".profile-tabs .filter").forEach(b => b.addEventListener("click", () => {
+        document.querySelectorAll(".profile-tabs .filter").forEach(x => x.classList.toggle("active", x === b));
+        $("#tab-favs").hidden = b.dataset.tab !== "favs";
+        $("#tab-activity").hidden = b.dataset.tab !== "activity";
+      }));
+
+      renderHead();
+      renderFavs();
+      renderActivity();
+    }
+  </script>
+
+</body>
+</html>

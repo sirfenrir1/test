@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Last Frame — klasik sinema, sanat filmleri ve bağımsız sinema arşivi.">
+  <title>The Last Frame — Sinema Arşivi</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+  <!-- ÜST MENÜ -->
+  <header class="site-header">
+
+    <a href="index.html" class="brand">
+      <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+      <span>THE LAST FRAME</span>
+    </a>
+
+    <nav>
+      <a href="index.html" class="nav-active">Ana Sayfa</a>
+      <a href="arsiv.html">Film Arşivi</a>
+      <a href="forum.html">Forum</a>
+      <a href="bagimsiz.html">Bağımsız Sinema</a>
+      <a href="fon.html">Film Fonu</a>
+    </nav>
+
+    <input
+      type="search"
+      id="search"
+      class="search"
+      placeholder="Film veya yönetmen ara..."
+      aria-label="Film veya yönetmen ara"
+    >
+
+  </header>
+
+
+  <main>
+
+    <!-- ANA VİTRİN -->
+    <section class="hero">
+      <div class="hero-content">
+
+        <p class="eyebrow">BAĞIMSIZ DİJİTAL SİNEMA PLATFORMU</p>
+
+        <h1>
+          Geçmişin sinemasını<br>
+          yaşat.<br>
+          <em>Geleceğin sinemasını<br>
+          üret.</em>
+        </h1>
+
+        <p class="hero-description">
+          Klasik filmler, sanat sineması ve bağımsız yapımlar için yaşayan bir arşiv.
+        </p>
+
+        <a href="arsiv.html" class="hero-button">
+          ARŞİVİ KEŞFET
+        </a>
+
+      </div>
+
+      <!-- En son eklenen filmlerin afişi (hero-poster.js doldurur) -->
+      <div class="hero-backdrop" id="hero-backdrop" aria-hidden="true"></div>
+      <a class="hero-poster" id="hero-poster" href="arsiv.html" hidden>
+        <span class="hero-poster-frame">
+          <img id="hero-poster-img" alt="">
+        </span>
+        <span class="hero-poster-caption">
+          <span class="hero-poster-label">YENİ EKLENEN</span>
+          <span class="hero-poster-title" id="hero-poster-title"></span>
+          <span class="hero-poster-meta" id="hero-poster-meta"></span>
+        </span>
+      </a>
+    </section>
+
+
+    <!-- ÖNE ÇIKAN ALAN -->
+    <section class="featured-film">
+
+      <div class="featured-content">
+        <p class="eyebrow">THE LAST FRAME SEÇKİSİ</p>
+
+        <h2>Sinema, hatırlamaya değer.</h2>
+
+        <p>
+          Her film bir iz bırakır. Biz o izleri geleceğe taşıyoruz.
+        </p>
+
+        <button id="featured-button" class="hero-button">
+          FİLMLERİ KEŞFET
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- BÖLÜM KARTLARI -->
+    <div class="home-cards">
+
+      <a href="arsiv.html" class="home-card card-archive">
+        <p class="eyebrow">SEÇKİMİZ</p>
+        <h2>Film arşivi</h2>
+        <p>Sanat sineması, dünya klasikleri, Türk sineması ve bağımsız yapımlar.</p>
+        <span class="card-cta">ARŞİVE GİT →</span>
+      </a>
+
+      <a href="forum.html" class="home-card card-forum">
+        <p class="eyebrow">THE LAST FRAME TOPLULUĞU</p>
+        <h2>Forum</h2>
+        <p>Filmleri, yönetmenleri ve sinema tarihini birlikte konuşalım.</p>
+        <span class="card-cta">FORUMA GİT →</span>
+      </a>
+
+      <a href="bagimsiz.html" class="home-card card-indie">
+        <p class="eyebrow">YENİ SESLER, YENİ HİKÂYELER</p>
+        <h2>Bağımsız sinema</h2>
+        <p>Bağımsız yapımlara ve yeni sinemacılara yer açıyoruz.</p>
+        <span class="card-cta">SAYFAYA GİT →</span>
+      </a>
+
+      <a href="fon.html" class="home-card card-fund">
+        <p class="eyebrow">GELECEĞE YATIRIM</p>
+        <h2>Film fonu</h2>
+        <p>Sinemanın geleceğini birlikte üretmek için.</p>
+        <span class="card-cta">SAYFAYA GİT →</span>
+      </a>
+
+    </div>
+
+  </main>
+
+
+  <!-- ALT BİLGİ -->
+  <footer class="site-footer">
+
+    <div class="footer-brand">THE LAST FRAME</div>
+
+    <p>
+      Bağımsız dijital sinema platformu.
+    </p>
+
+    <p>
+      © <span id="year"></span> The Last Frame. Tüm hakları saklıdır.
+    </p>
+
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="nav.js"></script>
+  <script src="films.js"></script>
+  <script src="hero-poster.js"></script>
+
+</body>
+</html>

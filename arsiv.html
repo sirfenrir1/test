@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Last Frame Film Arşivi — klasik sinema, sanat filmleri ve bağımsız yapımlar.">
+  <title>The Last Frame — Film Arşivi</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+  <!-- ÜST MENÜ -->
+  <header class="site-header">
+
+    <a href="index.html" class="brand">
+      <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+      <span>THE LAST FRAME</span>
+    </a>
+
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="arsiv.html" class="nav-active">Film Arşivi</a>
+      <a href="forum.html">Forum</a>
+      <a href="bagimsiz.html">Bağımsız Sinema</a>
+      <a href="fon.html">Film Fonu</a>
+    </nav>
+
+    <input
+      type="search"
+      id="search"
+      class="search"
+      placeholder="Film veya yönetmen ara..."
+      aria-label="Film veya yönetmen ara"
+    >
+
+  </header>
+
+
+  <main>
+
+    <!-- FİLM ARŞİVİ -->
+    <section class="section" id="arsiv">
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SEÇKİMİZ</p>
+          <h2>Film arşivi</h2>
+        </div>
+
+        <span id="count">0 kayıt gösteriliyor</span>
+      </div>
+
+
+      <!-- KATEGORİ FİLTRELERİ -->
+      <div class="filters">
+
+        <button class="filter active" data-filter="all">TÜMÜ</button>
+        <button class="filter" data-filter="Sanat Sineması">SANAT SİNEMASI</button>
+        <button class="filter" data-filter="Dünya Klasikleri">DÜNYA KLASİKLERİ</button>
+        <button class="filter" data-filter="Türk Sineması">TÜRK SİNEMASI</button>
+        <button class="filter" data-filter="Bağımsız">BAĞIMSIZ</button>
+
+      </div>
+
+
+      <!-- FİLM KARTLARI JAVASCRIPT İLE GELECEK -->
+      <div class="film-grid" id="film-grid"></div>
+
+      <p class="empty" id="empty" hidden>
+        Aramana uygun film bulunamadı.
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <!-- ALT BİLGİ -->
+  <footer class="site-footer">
+
+    <div class="footer-brand">THE LAST FRAME</div>
+
+    <p>Bağımsız dijital sinema platformu.</p>
+
+    <p>© <span id="year"></span> The Last Frame. Tüm hakları saklıdır.</p>
+
+  </footer>
+
+
+  <!-- FİLM DETAY PENCERESİ -->
+  <dialog id="film-dialog" class="film-dialog">
+
+    <button
+      class="dialog-close"
+      id="dialog-close"
+      aria-label="Kapat"
+    >×</button>
+
+    <div class="detail-backdrop">
+
+      <div class="dialog-content">
+
+        <p class="eyebrow">THE LAST FRAME FİLM ARŞİVİ</p>
+
+        <h2 id="dialog-title">Film adı</h2>
+
+        <p id="dialog-meta"></p>
+
+        <p id="dialog-facts"></p>
+
+        <p id="dialog-description"></p>
+
+        <div id="player-section" hidden>
+
+          <div id="player-wrap">
+            <video id="film-player" controls playsinline></video>
+          </div>
+
+          <p id="player-note" hidden></p>
+
+        </div>
+
+        <button id="watch-button" class="watch-button">
+          ▶ ŞİMDİ İZLE
+        </button>
+
+        <button id="fav-button" class="fav-button">♡ LİSTEME EKLE</button>
+
+      </div>
+
+    </div>
+
+  </dialog>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="films.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Last Frame | Film İzle</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 22px;
+      color: #c5a46a;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* SAYFA DÜZENİ: sol video + yorumlar, sağ film bilgileri */
+    .watch-layout {
+      width: 92%;
+      max-width: 1280px;
+      margin: 45px auto 60px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      grid-template-areas:
+        "video info"
+        "comments info";
+      gap: 0 40px;
+      align-items: start;
+    }
+    .watch-video    { grid-area: video; }
+    .watch-info-box { grid-area: info; position: sticky; top: 96px; }
+    .watch-comments { grid-area: comments; }
+
+    .eyebrow {
+      color: #c5a46a;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: Georgia, serif;
+      font-size: 38px;
+      font-weight: normal;
+      margin: 12px 0 28px;
+    }
+
+    .video-box {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border: 1px solid #332c25;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    .watch-status {
+      margin: 18px 0 0;
+      color: #aaa39a;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    /* FİLM BİLGİLERİ (sağ taraf) */
+    .info-card {
+      margin-top: 62px;
+      padding: 28px 26px;
+      background: linear-gradient(120deg, #211b19, #151311);
+      border: 1px solid rgba(197,164,106,.35);
+    }
+    .info-card h2 {
+      font-family: Georgia, serif;
+      font-weight: normal;
+      font-size: 26px;
+      line-height: 1.2;
+      margin: 8px 0 18px;
+      color: #e9dfcf;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 11px 0;
+      border-top: 1px solid rgba(240,236,229,.13);
+      font-size: 13px;
+    }
+    .info-row span { color: #aaa198; letter-spacing: .06em; text-transform: uppercase; font-size: 10px; padding-top: 2px; }
+    .info-row b { font-weight: normal; color: #eee5d8; text-align: right; }
+    .info-desc {
+      margin: 16px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid rgba(240,236,229,.13);
+      color: #c8beb3;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    /* YORUMLAR */
+    .comments-box {
+      margin-top: 40px;
+      padding-top: 28px;
+      border-top: 1px solid #292521;
+    }
+    .comments-box h2 {
+      font-family: Georgia, serif;
+      font-weight: normal;
+      font-size: 26px;
+      margin: 8px 0 20px;
+      color: #e9dfcf;
+    }
+    .comment-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+    .comment-form textarea {
+      width: 100%;
+      padding: 12px 14px;
+      resize: vertical;
+      background: #171615;
+      color: #f0ece5;
+      border: 1px solid rgba(197,164,106,.35);
+      outline: none;
+      font: 14px Georgia, serif;
+      line-height: 1.6;
+    }
+    .comment-form textarea:focus { border-color: #c5a46a; }
+    .comment-form .gold-btn { align-self: flex-start; }
+    .login-note { padding: 14px 16px; margin-bottom: 26px; border: 1px solid rgba(197,164,106,.4); color: #e8d7bd; font-size: 13px; line-height: 1.6; }
+    .login-note a { color: #c5a46a; border-bottom: 1px solid rgba(197,164,106,.5); }
+
+    .comment { display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid rgba(240,236,229,.1); }
+    .comment .who { font-size: 12px; letter-spacing: .06em; color: #c5a46a; text-transform: uppercase; }
+    .comment .who small { margin-left: 8px; color: #aaa198; text-transform: none; letter-spacing: 0; font-size: 11px; }
+    .comment p { margin: 6px 0 0; color: #d0c8bd; line-height: 1.7; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+    .comment .del { float: right; background: none; border: 0; color: #d98a85; font-size: 10px; letter-spacing: .08em; cursor: pointer; }
+    .no-comments { color: #aaa198; font-size: 14px; }
+    .comment-error { color: #d98a85; font-size: 13px; line-height: 1.6; }
+
+    @media (max-width: 960px) {
+      .watch-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "video"
+          "info"
+          "comments";
+      }
+      .watch-info-box { position: static; }
+      .info-card { margin-top: 28px; }
+    }
+    @media (max-width: 600px) {
+      .watch-layout { width: 94%; margin-top: 35px; }
+      h1 { font-size: 28px; }
+    }
+    /* REKLAM (film öncesi) */
+    .video-box { position: relative; overflow: hidden; }
+    .ad-layer { position: absolute; inset: 0; z-index: 5; background: #000; }
+    .ad-video { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .ad-top {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      background: linear-gradient(180deg, rgba(0,0,0,.7), transparent);
+      font-size: 11px; letter-spacing: .1em; color: #eee5d8;
+      pointer-events: none;
+    }
+    .ad-badge { background: #c5a46a; color: #111; padding: 3px 7px; font-weight: 700; letter-spacing: .15em; }
+    .ad-time { margin-left: auto; font-variant-numeric: tabular-nums; }
+    .ad-skip, .ad-visit, .ad-sound, .ad-start {
+      position: absolute; z-index: 2;
+      font: 11px Arial, sans-serif; letter-spacing: .1em;
+      padding: 11px 16px; cursor: pointer;
+      background: rgba(10,10,10,.82); color: #f0ece5;
+      border: 1px solid rgba(240,236,229,.35);
+    }
+    .ad-skip { right: 0; bottom: 34px; border-right: 0; min-width: 190px; text-align: left; }
+    .ad-skip:not(:disabled):hover { background: #c5a46a; color: #111; border-color: #c5a46a; }
+    .ad-skip:disabled { cursor: default; color: #c8beb3; font-size: 10px; }
+    .ad-visit { left: 14px; bottom: 34px; color: #c5a46a; border-color: rgba(197,164,106,.6); }
+    .ad-visit:hover { background: #c5a46a; color: #111; }
+    .ad-sound { left: 14px; top: 50px; }
+    .ad-start { left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 14px; padding: 16px 26px; border-color: #c5a46a; color: #c5a46a; }
+    .ad-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,.15); }
+    .ad-progress span { display: block; height: 100%; width: 0; background: #c5a46a; transition: width .25s linear; }
+    @media (max-width: 600px) {
+      .ad-skip { min-width: 0; bottom: 26px; padding: 9px 12px; }
+      .ad-visit { bottom: 26px; padding: 9px 12px; }
+      .ad-sponsor { display: none; }
+    }
+  </style>
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+  <!-- ÜST MENÜ -->
+  <header class="site-header">
+
+    <a href="index.html" class="brand">
+      <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+      <span>THE LAST FRAME</span>
+    </a>
+
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="arsiv.html">Film Arşivi</a>
+      <a href="forum.html">Forum</a>
+      <a href="bagimsiz.html">Bağımsız Sinema</a>
+      <a href="fon.html">Film Fonu</a>
+    </nav>
+
+    <input
+      type="search"
+      id="search"
+      class="search"
+      placeholder="Film veya yönetmen ara..."
+      aria-label="Film veya yönetmen ara"
+    >
+
+  </header>
+
+  <main class="watch-layout">
+
+    <!-- SOL: VİDEO -->
+    <section class="watch-video">
+      <a href="arsiv.html" class="back-link">← FİLM ARŞİVİNE DÖN</a>
+
+      <p class="eyebrow">THE LAST FRAME • FİLM GÖSTERİMİ</p>
+
+      <h1 id="film-title">Film yükleniyor...</h1>
+
+      <div class="video-box">
+        <video id="player" controls playsinline preload="metadata">
+          Tarayıcınız video oynatmayı desteklemiyor.
+        </video>
+      </div>
+
+      <p class="watch-status" id="watch-info">Film hazırlanıyor...</p>
+    </section>
+
+    <!-- SAĞ: FİLM BİLGİLERİ -->
+    <aside class="watch-info-box">
+      <div class="info-card" id="info-card">
+        <p class="eyebrow">FİLM BİLGİLERİ</p>
+        <h2 id="info-title">—</h2>
+        <div id="info-rows"></div>
+        <p class="info-desc" id="info-desc" hidden></p>
+      </div>
+    </aside>
+
+    <!-- SOL ALT: YORUMLAR -->
+    <section class="watch-comments">
+      <div class="comments-box">
+        <p class="eyebrow">TOPLULUK</p>
+        <h2>Yorumlar <span id="comment-count" style="font-size:14px;color:#aaa198"></span></h2>
+
+        <div id="comment-form-slot"></div>
+        <div id="comment-list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ALT BİLGİ -->
+  <footer class="site-footer">
+    <div class="footer-brand">THE LAST FRAME</div>
+    <p>Bağımsız dijital sinema platformu.</p>
+    <p>© <span id="year"></span> The Last Frame. Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="films.js"></script>
+  <script src="ads.js"></script>
+  <script src="preroll.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Arama: Enter'a basınca film arşivinde arar
+    document.getElementById("search").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const q = e.target.value.trim();
+        window.location.href = "arsiv.html" + (q ? "?q=" + encodeURIComponent(q) : "");
+      }
+    });
+  </script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const videoFile = params.get("video");
+    const title = params.get("title");
+    let filmId = params.get("id");
+
+    const player = document.getElementById("player");
+    const filmTitle = document.getElementById("film-title");
+    const watchInfo = document.getElementById("watch-info");
+
+    /* ---------- VİDEO ---------- */
+    function startVideo() {
+      // Altyazılar (films.js içindeki "subtitles" alanından)
+      const subFilm = films.find(f => f.id === filmId) || films.find(f => f.video && f.video === videoFile);
+      const subs = (subFilm && subFilm.subtitles) || [];
+      // Başka bir sitedeki altyazı dosyası için video "crossorigin" ister
+      if (subs.some(s => /^https?:/i.test(s.src))) player.crossOrigin = "anonymous";
+      subs.forEach((s, i) => {
+        const t = document.createElement("track");
+        t.kind = "subtitles";
+        t.src = s.src;
+        t.srclang = s.lang;
+        t.label = s.label;
+        if (i === 0) t.default = true;
+        player.append(t);
+      });
+
+      player.src = new URL(videoFile, window.location.href).href;
+      filmTitle.textContent = title || "The Last Frame Film";
+      watchInfo.textContent = "Film yükleniyor...";
+
+      player.load();
+
+      // Film öncesi reklam: film arkada yüklenirken reklam oynar, bitince film başlar
+      Preroll.run(document.querySelector(".video-box"), filmId).then(hadAd => {
+        if (hadAd) player.play().catch(() => {});
+      });
+
+      player.addEventListener("canplay", () => {
+        watchInfo.textContent = "İyi seyirler.";
+      });
+
+      player.addEventListener("error", () => {
+        watchInfo.textContent = "Video yüklenemedi.";
+      });
+    }
+
+    if (videoFile) {
+      filmTitle.textContent = title || "The Last Frame Film";
+      const known = films.find(f => f.id === filmId) || films.find(f => f.video && f.video === videoFile);
+      // Film listede yoksa (veritabanından eklenmiş olabilir) önce listeyi yükle
+      if (known || !filmId) startVideo();
+      else loadRemoteFilms().then(startVideo, startVideo);
+    } else {
+      filmTitle.textContent = "Film bulunamadı";
+      watchInfo.textContent = "Video dosyası belirtilmemiş.";
+    }
+
+    /* ---------- YARDIMCILAR ---------- */
+    const mk = (tag, cls, text) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const fmt = t => new Date(t).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+
+    /* ---------- FİLM BİLGİLERİ ---------- */
+    let currentFilm = null;
+
+    function renderInfo(film) {
+      const f = film || { title: title || "The Last Frame Film" };
+      document.getElementById("info-title").textContent = f.title;
+
+      const rows = document.getElementById("info-rows");
+      rows.innerHTML = "";
+      [
+        ["Yıl", f.year],
+        ["Yönetmen", f.director],
+        ["Kategori", f.category],
+        ["Süre", f.duration],
+        ["Ülke", f.country],
+        ["Dil", f.language]
+      ].forEach(([label, value]) => {
+        if (!value) return;
+        const row = mk("div", "info-row");
+        row.append(mk("span", "", label), mk("b", "", value));
+        rows.append(row);
+      });
+
+      const desc = document.getElementById("info-desc");
+      desc.hidden = !f.description;
+      desc.textContent = f.description || "";
+    }
+
+    /* ---------- YORUMLAR ---------- */
+    async function loadComments() {
+      const list = document.getElementById("comment-list");
+      if (!filmId) {
+        list.replaceChildren(mk("p", "no-comments", "Bu film için yorum yapılamıyor."));
+        return;
+      }
+
+      const { data, error } = await sb
+        .from("comments")
+        .select("id, body, created_at, user_id, profiles(username, color)")
+        .eq("film_id", filmId)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        list.replaceChildren(mk("p", "comment-error", "Yorumlar yüklenemedi: " + error.message));
+        return;
+      }
+
+      document.getElementById("comment-count").textContent = data.length ? `(${data.length})` : "";
+      list.innerHTML = "";
+      if (!data.length) {
+        list.append(mk("p", "no-comments", "Henüz yorum yok. İlk yorumu sen yaz."));
+        return;
+      }
+
+      const me = Auth.current();
+      data.forEach(c => {
+        const p = c.profiles || { username: "Silinmiş üye", color: "#666b7a" };
+        const row = mk("div", "comment");
+        row.append(Auth.avatar(p, "sm"));
+
+        const right = mk("div");
+        const who = mk("div", "who", p.username);
+        who.append(mk("small", "", fmt(c.created_at)));
+        if (me && me.id === c.user_id) {
+          const del = mk("button", "del", "SİL");
+          del.addEventListener("click", async () => {
+            if (!confirm("Yorumun silinsin mi?")) return;
+            const { error: e } = await sb.from("comments").delete().eq("id", c.id);
+            if (e) return alert("Silinemedi: " + e.message);
+            loadComments();
+          });
+          who.append(del);
+        }
+        right.append(who, mk("p", "", c.body));
+        row.append(right);
+        list.append(row);
+      });
+    }
+
+    function renderCommentForm() {
+      const slot = document.getElementById("comment-form-slot");
+      slot.innerHTML = "";
+      const me = Auth.current();
+
+      if (!filmId) return;
+
+      if (!me) {
+        const note = mk("div", "login-note");
+        note.append(document.createTextNode("Yorum yazmak için "));
+        const a = mk("a", "", "giriş yapmalısın");
+        a.href = "giris.html?next=" + encodeURIComponent("watch.html" + location.search);
+        note.append(a, document.createTextNode("."));
+        slot.append(note);
+        return;
+      }
+
+      const form = mk("form", "comment-form");
+      const ta = mk("textarea");
+      ta.rows = 3; ta.maxLength = 1000; ta.required = true;
+      ta.placeholder = `${me.username} olarak yorum yaz...`;
+      const btn = mk("button", "gold-btn", "YORUM YAP");
+      btn.type = "submit";
+      form.append(ta, btn);
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = ta.value.trim();
+        if (!text) return;
+        btn.disabled = true;
+        const { error } = await sb.from("comments").insert({ film_id: filmId, user_id: me.id, body: text });
+        btn.disabled = false;
+        if (error) return alert("Yorum eklenemedi: " + error.message);
+        ta.value = "";
+        loadComments();
+      });
+      slot.append(form);
+    }
+
+    /* ---------- BAŞLAT ---------- */
+    renderInfo(null);
+    (async () => {
+      await Promise.all([Auth.ready, loadRemoteFilms()]);
+      currentFilm = films.find(f => f.id === filmId) || films.find(f => f.video && f.video === videoFile) || null;
+      if (!filmId && currentFilm) filmId = currentFilm.id;
+      renderInfo(currentFilm);
+      renderCommentForm();
+      loadComments();
+    })();
+  </script>
+
+</body>
+</html>

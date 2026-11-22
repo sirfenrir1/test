@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Last Frame — Giriş</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <a href="index.html" class="brand">
+      <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+      <span>THE LAST FRAME</span>
+    </a>
+
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="arsiv.html">Film Arşivi</a>
+      <a href="forum.html">Forum</a>
+      <a href="bagimsiz.html">Bağımsız Sinema</a>
+      <a href="fon.html">Film Fonu</a>
+    </nav>
+
+    <input type="search" id="search" class="search" placeholder="Film veya yönetmen ara..." aria-label="Film veya yönetmen ara">
+  </header>
+
+  <main class="auth-page">
+
+    <div class="auth-card">
+      <p class="eyebrow">THE LAST FRAME ÜYELİK</p>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">GİRİŞ YAP</button>
+        <button class="auth-tab" data-tab="register">ÜYE OL</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <label>E-posta
+          <input type="text" id="l-id" autocomplete="email" required>
+        </label>
+        <label>Şifre
+          <input type="password" id="l-pass" autocomplete="current-password" required>
+        </label>
+        <p class="form-error" id="l-error" hidden></p>
+        <button type="submit" class="gold-btn">GİRİŞ YAP</button>
+        <a href="#" id="forgot-link" class="inline-link" style="align-self:flex-start">Şifremi unuttum</a>
+      </form>
+
+      <form id="forgot-form" class="auth-form" hidden>
+        <p class="auth-note" style="margin:0">Hesabının e-postasını yaz. Şifreni yenilemen için bir bağlantı gönderelim.</p>
+        <label>E-posta
+          <input type="text" id="f-email" autocomplete="email" required>
+        </label>
+        <p class="form-error" id="f-error" hidden></p>
+        <p class="saved-note" id="f-ok" hidden></p>
+        <button type="submit" class="gold-btn">BAĞLANTI GÖNDER</button>
+        <a href="#" id="forgot-back" class="inline-link" style="align-self:flex-start">← Girişe dön</a>
+      </form>
+
+      <form id="register-form" class="auth-form" hidden>
+        <label>Kullanıcı adı
+          <input type="text" id="r-user" maxlength="20" autocomplete="username" required>
+        </label>
+        <label>E-posta
+          <input type="text" id="r-email" autocomplete="email" required>
+        </label>
+        <label>Şifre (en az 6 karakter)
+          <input type="password" id="r-pass" autocomplete="new-password" required>
+        </label>
+        <p class="form-error" id="r-error" hidden></p>
+        <button type="submit" class="gold-btn">ÜYE OL</button>
+      </form>
+
+      <p class="auth-note">Hesabın güvenli bir şekilde saklanır; şifren hiçbir yerde düz metin olarak tutulmaz.</p>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">THE LAST FRAME</div>
+    <p>Bağımsız dijital sinema platformu.</p>
+    <p>© <span id="year"></span> The Last Frame. Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+  <script src="nav.js"></script>
+  <script>
+    // Yönlendirme hedefi (sadece aynı klasördeki .html sayfaları)
+    const nextParam = new URLSearchParams(location.search).get("next") || "";
+    const next = /^[\w-]+\.html(\?[\w%&=.\-]*)?$/.test(nextParam) ? nextParam : "profil.html";
+
+    Auth.ready.then(u => { if (u) location.replace("profil.html"); });
+
+    const tabs = document.querySelectorAll(".auth-tab");
+    const forms = { login: document.querySelector("#login-form"), register: document.querySelector("#register-form") };
+    tabs.forEach(t => t.addEventListener("click", () => {
+      tabs.forEach(x => x.classList.toggle("active", x === t));
+      Object.entries(forms).forEach(([k, f]) => f.hidden = k !== t.dataset.tab);
+      document.querySelector("#forgot-form").hidden = true;
+    }));
+
+    function showError(id, msg) {
+      const e = document.querySelector(id);
+      e.textContent = msg;
+      e.hidden = false;
+    }
+
+    forms.login.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await Auth.login({ email: document.querySelector("#l-id").value, password: document.querySelector("#l-pass").value });
+        location.href = next;
+      } catch (err) { showError("#l-error", err.message); }
+    });
+
+    forms.register.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        const res = await Auth.register({
+          username: document.querySelector("#r-user").value,
+          email: document.querySelector("#r-email").value,
+          password: document.querySelector("#r-pass").value
+        });
+        if (res.needsConfirm) {
+          showError("#r-error", "Kaydın alındı. E-postana gelen onay bağlantısına tıkla, sonra giriş yap.");
+          document.querySelector("#r-error").style.color = "#c5a46a";
+        } else {
+          location.href = next;
+        }
+      } catch (err) { showError("#r-error", err.message); }
+    });
+
+    // Şifremi unuttum
+    const forgot = document.querySelector("#forgot-form");
+    document.querySelector("#forgot-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      forms.login.hidden = true;
+      forgot.hidden = false;
+      document.querySelector("#f-email").value = document.querySelector("#l-id").value;
+    });
+    document.querySelector("#forgot-back").addEventListener("click", (e) => {
+      e.preventDefault();
+      forgot.hidden = true;
+      forms.login.hidden = false;
+    });
+    forgot.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.querySelector("#f-error");
+      const ok = document.querySelector("#f-ok");
+      err.hidden = true; ok.hidden = true;
+      const email = document.querySelector("#f-email").value.trim();
+      if (!/^\S+@\S+\.\S+$/.test(email)) { err.textContent = "Geçerli bir e-posta adresi gir."; err.hidden = false; return; }
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: new URL("sifre-yenile.html", location.href).href
+      });
+      if (error) { err.textContent = "Gönderilemedi: " + error.message; err.hidden = false; return; }
+      ok.textContent = "Bu e-posta kayıtlıysa şifre yenileme bağlantısı gönderildi. Gelen kutunu (ve gereksiz kutusunu) kontrol et.";
+      ok.hidden = false;
+    });
+  </script>
+
+</body>
+</html>

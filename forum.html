@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Last Frame Forum — sinema üzerine tartışmalar.">
+  <title>The Last Frame — Forum</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="forum.css">
+  <link rel="icon" type="image/png" href="media/favicon.png">
+  <link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+</head>
+
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="brand">
+    <img class="brand-logo" src="media/logo-256.webp" alt="The Last Frame logosu" width="48" height="48">
+    <span>THE LAST FRAME</span>
+  </a>
+
+  <nav>
+    <a href="index.html">Ana Sayfa</a>
+    <a href="arsiv.html">Film Arşivi</a>
+    <a href="forum.html" class="nav-active">Forum</a>
+    <a href="bagimsiz.html">Bağımsız Sinema</a>
+    <a href="fon.html">Film Fonu</a>
+  </nav>
+
+  <input type="search" id="forum-search" class="search" placeholder="Konularda ara..." aria-label="Konularda ara">
+</header>
+
+<main class="forum-page">
+
+  <!-- GİRİŞ -->
+  <section class="forum-hero">
+    <div>
+      <p class="eyebrow">THE LAST FRAME TOPLULUĞU</p>
+      <h1>Sinema üzerine <em>konuşalım.</em></h1>
+      <p class="forum-intro">Filmler, yönetmenler, sinema tarihi ve bağımsız yapımlar hakkında düşüncelerini paylaş.</p>
+      <button class="gold-btn" id="new-topic-btn">+ YENİ KONU AÇ</button>
+    </div>
+    <div class="forum-stamp">FORUM</div>
+  </section>
+
+  <div id="announcement" class="announcement" hidden></div>
+
+  <!-- ANA DÜZEN -->
+  <div class="forum-layout">
+
+    <section class="forum-main">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">TARTIŞMALAR</p>
+          <h2>Konular</h2>
+        </div>
+        <span id="topic-count" class="muted small">0 konu</span>
+      </div>
+
+      <div class="filters" id="cat-filters"></div>
+
+      <div id="topic-list" class="topic-list"></div>
+      <p class="empty" id="topic-empty" hidden>Bu filtreye uygun konu bulunamadı.</p>
+    </section>
+
+    <aside class="forum-side">
+
+      <div class="side-card">
+        <p class="eyebrow">FORUM</p>
+        <div class="stat-row"><span>Konu</span><b id="stat-topics">0</b></div>
+        <div class="stat-row"><span>Yanıt</span><b id="stat-replies">0</b></div>
+        <div class="stat-row"><span>Kategori</span><b id="stat-cats">0</b></div>
+      </div>
+
+      <div class="side-card">
+        <p class="eyebrow">KURALLAR</p>
+        <ul class="rules">
+          <li>Saygılı bir dil kullan.</li>
+          <li>Film ve sinema dışına çıkma.</li>
+          <li>Filmin sonunu verecekse konu başlığında belirt.</li>
+          <li>Telif hakkı içeren kaynak paylaşma.</li>
+        </ul>
+      </div>
+
+    </aside>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-brand">THE LAST FRAME</div>
+  <p>Bağımsız dijital sinema platformu.</p>
+  <p>© <span id="year"></span> The Last Frame. Tüm hakları saklıdır.</p>
+</footer>
+
+<!-- YENİ KONU -->
+<dialog id="topic-dialog" class="forum-dialog">
+  <button class="dialog-close" data-close aria-label="Kapat">×</button>
+  <form id="topic-form" class="dialog-body">
+    <p class="eyebrow">YENİ KONU</p>
+    <h2>Bir konu aç</h2>
+
+    <label>Başlık
+      <input type="text" id="t-title" maxlength="120" required>
+    </label>
+    <label>Kategori
+      <select id="t-cat"></select>
+    </label>
+    <label>Mesajın
+      <textarea id="t-body" rows="6" required></textarea>
+    </label>
+
+    <button type="submit" class="gold-btn">YAYINLA</button>
+  </form>
+</dialog>
+
+<!-- KONU DETAYI -->
+<dialog id="thread-dialog" class="forum-dialog wide-dialog">
+  <button class="dialog-close" data-close aria-label="Kapat">×</button>
+  <div class="dialog-body" id="thread-body"></div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script src="forum.js"></script>
+</body>
+</html>

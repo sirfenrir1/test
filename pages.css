@@ -1,0 +1,70 @@
+/* The Last Frame — ana sayfa kartları ve bilgi sayfaları (styles.css paletiyle aynı) */
+
+.nav-active { color: var(--gold); }
+
+.gold-link {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 13px 22px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font: 11px Arial, sans-serif;
+  letter-spacing: 2px;
+}
+.gold-link:hover { background: rgba(197,164,106,.12); }
+
+/* ANA SAYFA KARTLARI */
+.home-cards {
+  max-width: var(--max);
+  margin: 35px auto 60px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.home-card {
+  display: block;
+  padding: 45px 38px;
+  color: #f0ece5;
+  transition: transform .3s ease, border-color .3s ease;
+}
+.home-card:hover { transform: translateY(-4px); }
+.home-card h2 { font-size: 34px; font-weight: 400; margin: 10px 0; color: #e8d7bd; }
+.home-card p:not(.eyebrow) { color: #c8beb3; line-height: 1.8; margin: 0 0 16px; }
+.card-cta { font: 11px Arial, sans-serif; letter-spacing: 2px; color: var(--gold); }
+.card-archive { background: linear-gradient(120deg, #211b19, #151311); border: 1px solid rgba(197,164,106,.35); }
+.card-forum   { background: linear-gradient(120deg, #292019, #151210); border: 1px solid #59432c; }
+.card-indie   { background: linear-gradient(120deg, #19221d, #101512); border: 1px solid #344b3b; }
+.card-fund    { background: linear-gradient(120deg, #302316, #17120e); border: 1px solid #725632; }
+.card-archive:hover, .card-forum:hover, .card-indie:hover, .card-fund:hover { border-color: var(--gold); }
+
+/* BİLGİ SAYFALARI */
+.info-page { max-width: var(--max); margin: auto; padding: 0 24px 60px; }
+.info-hero {
+  margin: 35px 0 30px;
+  padding: 75px 45px;
+  border: 1px solid rgba(197,164,106,.3);
+}
+.info-hero.indie { background: linear-gradient(110deg, #19221d, #101512); border-color: #344b3b; }
+.info-hero.fund  { background: linear-gradient(110deg, #302316, #17120e); border-color: #725632; }
+.info-hero h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 400; margin: 16px 0; color: #f0e5d4; }
+.info-hero h1 em { color: var(--gold); }
+.info-lead { max-width: 560px; color: #c8beb3; line-height: 1.8; font-size: 17px; margin: 0; }
+
+.info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.info-card { padding: 28px; background: var(--panel); border: 1px solid rgba(197,164,106,.15); }
+.info-card h3 { margin: 0 0 10px; font-weight: 400; font-size: 21px; color: #e9dfcf; }
+.info-card p { margin: 0; color: #c8beb3; line-height: 1.8; font-size: 15px; }
+.inline-link { color: var(--gold); border-bottom: 1px solid rgba(197,164,106,.5); }
+.info-note { margin-top: 28px; color: var(--muted); font: 12px Arial, sans-serif; letter-spacing: .05em; }
+
+@media (max-width: 900px) {
+  .home-cards { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 580px) {
+  .info-page { padding: 0 16px 40px; }
+  .info-hero { padding: 45px 22px; }
+  .home-cards { padding: 0 16px; }
+  .home-card { padding: 32px 22px; }
+}

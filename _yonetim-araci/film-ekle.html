@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>The Last Frame — Film Ekleme Aracı</title>
+
+  <style>
+    :root { --bg:#101010; --panel:#1b1918; --text:#f0ece5; --muted:#aaa198; --red:#a83b35; --gold:#c5a46a; --line:rgba(240,236,229,.13); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Georgia, "Times New Roman", serif; }
+    a { color: var(--gold); }
+    header { padding: 18px 6%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .brand { font: 700 17px Arial, sans-serif; letter-spacing: .16em; }
+    .badge { font: 11px Arial, sans-serif; letter-spacing: .2em; color: #d98a85; border: 1px solid var(--red); padding: 6px 10px; }
+    main { max-width: 860px; margin: 40px auto 80px; padding: 0 20px; }
+    .eyebrow { font: 10px Arial, sans-serif; letter-spacing: .23em; color: var(--gold); text-transform: uppercase; margin: 0; }
+    h1 { font-weight: 400; font-size: 34px; margin: 8px 0 22px; color: #e9dfcf; }
+    h2 { font-weight: 400; font-size: 22px; margin: 0 0 14px; color: #e9dfcf; }
+    .card { padding: 28px; margin-bottom: 22px; background: linear-gradient(120deg, #211b19, #151311); border: 1px solid rgba(197,164,106,.3); }
+    .warn { padding: 14px 16px; margin-bottom: 22px; border: 1px solid var(--red); background: rgba(168,59,53,.1); color: #e3b0ac; font: 13px/1.6 Arial, sans-serif; }
+    label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font: 11px Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+    label small { text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 11px; }
+    input[type=text], input[type=password], input[type=email], select, textarea {
+      width: 100%; padding: 10px 12px; background: #171615; color: var(--text);
+      border: 1px solid rgba(197,164,106,.35); outline: none; font: 14px Georgia, serif;
+    }
+    input[type=file] { color: var(--muted); font: 13px Arial, sans-serif; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .or { margin: -6px 0 14px; color: var(--muted); font: 11px Arial, sans-serif; }
+    button { cursor: pointer; font: bold 11px Arial, sans-serif; letter-spacing: .13em; }
+    .gold { padding: 14px 24px; border: 0; background: var(--gold); color: #111; }
+    .gold:hover { background: #e0c18b; }
+    .gold:disabled { opacity: .5; cursor: wait; }
+    .ghost { padding: 9px 14px; border: 1px solid rgba(197,164,106,.5); background: none; color: var(--gold); }
+    .ghost.danger { border-color: var(--red); color: #d98a85; }
+    .sub-row { display: grid; grid-template-columns: 1.4fr .5fr .8fr auto; gap: 10px; align-items: end; margin-bottom: 10px; }
+    .sub-row label { margin: 0; }
+    .err { color: #d98a85; font: 13px/1.6 Arial, sans-serif; margin: 10px 0 0; }
+    .ok { color: var(--gold); font: 13px/1.6 Arial, sans-serif; margin: 10px 0 0; }
+    .log { margin-top: 16px; font: 12px/1.7 Arial, sans-serif; color: #d6cdc1; }
+    .prog { height: 6px; background: #2a2522; margin: 4px 0 10px; }
+    .prog div { height: 100%; width: 0; background: var(--gold); transition: width .2s; }
+    table { width: 100%; border-collapse: collapse; font: 13px Arial, sans-serif; }
+    th { text-align: left; padding: 9px; color: var(--gold); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; border-bottom: 1px solid rgba(197,164,106,.3); }
+    td { padding: 9px; border-bottom: 1px solid var(--line); color: #d6cdc1; }
+    .tmdb-row { display: flex; gap: 10px; align-items: end; }
+    .tmdb-row label { flex: 1; margin: 0; }
+    .tmdb-results { margin-top: 14px; display: grid; gap: 8px; }
+    .tmdb-item { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; padding: 8px; border: 1px solid var(--line); background: #171615; }
+    .tmdb-item img, .tmdb-item .noimg { width: 46px; height: 69px; object-fit: cover; background: #2a2522; }
+    .tmdb-item b { font-weight: 400; color: #e9dfcf; }
+    .tmdb-item span { display: block; color: var(--muted); font: 12px Arial, sans-serif; margin-top: 3px; }
+    .tmdb-credit { margin: 14px 0 0; color: var(--muted); font: 11px/1.6 Arial, sans-serif; }
+    [hidden] { display: none !important; }
+    @media (max-width: 640px) { .row, .sub-row { grid-template-columns: 1fr; } }
+  </style>
+  <link rel="icon" type="image/png" href="../media/favicon.png">
+  <link rel="apple-touch-icon" href="../media/apple-touch-icon.png">
+</head>
+
+<body>
+
+<header>
+  <span class="brand"><img src="../media/logo-256.webp" alt="" width="34" height="34" style="vertical-align:middle;margin-right:10px">THE LAST FRAME</span>
+  <span class="badge">FİLM EKLEME ARACI</span>
+</header>
+
+<main>
+
+  <div class="warn">
+    Bu klasör (<b>_yonetim-araci</b>) yalnızca senin içindir. Siteyi internette yayınlarken bu klasörü <b>yükleme</b>.
+    Asıl güvenlik veritabanındadır: yönetici olmayan bir hesap bu aracı açsa bile film ekleyemez ve dosya yükleyemez.
+  </div>
+
+  <!-- GİRİŞ -->
+  <section class="card" id="login-card">
+    <p class="eyebrow">YÖNETİCİ GİRİŞİ</p>
+    <h1>Giriş yap</h1>
+    <form id="login-form">
+      <label>E-posta <input type="email" id="l-email" autocomplete="email" required></label>
+      <label>Şifre <input type="password" id="l-pass" autocomplete="current-password" required></label>
+      <button class="gold" type="submit">GİRİŞ YAP</button>
+      <p class="err" id="l-err" hidden></p>
+      <p style="margin:14px 0 0"><a href="#" id="forgot-link" style="font:13px Arial,sans-serif">Şifremi unuttum</a></p>
+    </form>
+
+    <form id="forgot-form" hidden>
+      <p class="or" style="margin-top:0">Yönetici hesabının e-postasını yaz; şifreni yenilemen için bir bağlantı gönderelim.</p>
+      <label>E-posta <input type="email" id="f-email" autocomplete="email" required></label>
+      <button class="gold" type="submit">BAĞLANTI GÖNDER</button>
+      <p class="err" id="fg-err" hidden></p>
+      <p class="ok" id="fg-ok" hidden></p>
+      <p style="margin:14px 0 0"><a href="#" id="forgot-back" style="font:13px Arial,sans-serif">← Girişe dön</a></p>
+    </form>
+  </section>
+
+  <!-- ARAÇ -->
+  <div id="tool" hidden>
+
+    <section class="card">
+      <p class="eyebrow">TMDB</p>
+      <h2>Film bilgilerini otomatik doldur</h2>
+      <p class="or" style="margin-top:-6px">Film adını ara, sonucu seç; ad, yıl, süre, yönetmen, ülke, dil, açıklama ve afiş aşağıdaki forma dolsun. Video dosyasını yine sen eklersin (TMDB video vermez).</p>
+
+      <label>TMDB API anahtarı
+        <input type="password" id="tmdb-key" autocomplete="off" placeholder="API anahtarı (v3) ya da Erişim Belirteci (v4)">
+        <small>Yalnızca bu tarayıcıda saklanır; siteye ve veritabanına gönderilmez. <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Ücretsiz anahtar al</a></small>
+      </label>
+
+      <div class="tmdb-row">
+        <label>Film adı <input type="text" id="tmdb-q" placeholder="ör. Stalker"></label>
+        <label style="max-width:110px">Yıl (ops.) <input type="text" id="tmdb-y" maxlength="4"></label>
+        <button class="gold" type="button" id="tmdb-search">ARA</button>
+      </div>
+      <div class="tmdb-results" id="tmdb-results"></div>
+      <p class="err" id="tmdb-err" hidden></p>
+      <p class="ok" id="tmdb-ok" hidden></p>
+      <p class="tmdb-credit">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow" id="who">—</p>
+      <h1>Yeni film ekle</h1>
+
+      <form id="film-form">
+        <label>Film adı * <input type="text" id="f-title" maxlength="80" required></label>
+
+        <div class="row">
+          <label>Yıl <input type="text" id="f-year" maxlength="10"></label>
+          <label>Süre <input type="text" id="f-duration" maxlength="20" placeholder="ör. 105 dk"></label>
+        </div>
+
+        <div class="row">
+          <label>Yönetmen <input type="text" id="f-director" maxlength="60"></label>
+          <label>Kategori *
+            <select id="f-category">
+              <option>Sanat Sineması</option>
+              <option>Dünya Klasikleri</option>
+              <option>Türk Sineması</option>
+              <option>Bağımsız</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Ülke <input type="text" id="f-country" maxlength="40"></label>
+          <label>Dil <input type="text" id="f-language" maxlength="30"></label>
+        </div>
+
+        <label>Açıklama (boş bırakabilirsin) <textarea id="f-description" rows="3"></textarea></label>
+
+        <label>Video dosyası *
+          <input type="file" id="f-video-file" accept="video/*">
+          <small>Dosya seç ya da aşağıya hazır bir adres yaz.</small>
+        </label>
+        <label>…veya video adresi
+          <input type="text" id="f-video-url" placeholder="https://...">
+        </label>
+
+        <label>Afiş görseli
+          <input type="file" id="f-poster-file" accept="image/*">
+        </label>
+        <label>…veya afiş adresi
+          <input type="text" id="f-poster-url" placeholder="https://... (boş bırakabilirsin)">
+        </label>
+
+        <p class="eyebrow" style="margin:6px 0 10px">ALTYAZILAR (isteğe bağlı; .srt veya .vtt)</p>
+        <div id="sub-rows"></div>
+        <button class="ghost" type="button" id="add-sub">+ ALTYAZI EKLE</button>
+
+        <div style="margin-top:22px">
+          <button class="gold" type="submit" id="submit-btn">FİLMİ YÜKLE VE EKLE</button>
+        </div>
+
+        <div class="log" id="log"></div>
+        <p class="err" id="f-err" hidden></p>
+        <p class="ok" id="f-ok" hidden></p>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Eklenen filmler</h2>
+      <p class="or" style="margin-top:-6px">Yalnızca bu araçla eklenen filmler listelenir. Silmek yalnızca arşivden kaldırır; yüklenen dosyalar depoda kalır.</p>
+      <table>
+        <thead><tr><th>Film</th><th>Kategori</th><th>İşlem</th></tr></thead>
+        <tbody id="film-list"></tbody>
+      </table>
+      <p class="or" id="film-empty" hidden>Henüz film eklenmemiş.</p>
+    </section>
+
+    <button class="ghost" id="logout">ÇIKIŞ YAP</button>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-config.js"></script>
+<script>
+  const BUCKET = "filimler ve filmler";
+  const $ = s => document.querySelector(s);
+  const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+  /* ---------- GİRİŞ ---------- */
+  async function enter(user) {
+    const { data: p } = await sb.from("profiles").select("username, role").eq("id", user.id).maybeSingle();
+    if (!p || p.role !== "admin") {
+      await sb.auth.signOut();
+      $("#tool").hidden = true; $("#login-card").hidden = false;
+      const e = $("#l-err");
+      e.textContent = "Bu hesap yönetici değil. (Veritabanında role = 'admin' olmalı.)";
+      e.hidden = false;
+      return;
+    }
+    $("#login-card").hidden = true;
+    $("#tool").hidden = false;
+    $("#who").textContent = "Giriş yapan: " + p.username;
+    if (!$("#sub-rows").children.length) addSubRow();
+    loadList();
+  }
+
+  $("#login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("#l-err"); err.hidden = true;
+    const { data, error } = await sb.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-pass").value });
+    if (error) { err.textContent = "E-posta veya şifre hatalı."; err.hidden = false; return; }
+    enter(data.user);
+  });
+
+  /* Şifremi unuttum: yeni şifre sayfası sitenin kök klasöründe (../sifre-yenile.html) */
+  $("#forgot-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    $("#login-form").hidden = true;
+    $("#forgot-form").hidden = false;
+    $("#f-email").value = $("#l-email").value;
+  });
+  $("#forgot-back").addEventListener("click", (e) => {
+    e.preventDefault();
+    $("#forgot-form").hidden = true;
+    $("#login-form").hidden = false;
+  });
+  $("#forgot-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("#fg-err"), ok = $("#fg-ok");
+    err.hidden = true; ok.hidden = true;
+    const { error } = await sb.auth.resetPasswordForEmail($("#f-email").value.trim(), {
+      redirectTo: new URL("../sifre-yenile.html", location.href).href
+    });
+    if (error) { err.textContent = "Gönderilemedi: " + error.message; err.hidden = false; return; }
+    ok.textContent = "Bu e-posta kayıtlıysa şifre yenileme bağlantısı gönderildi. Gelen kutunu (ve gereksiz kutusunu) kontrol et.";
+    ok.hidden = false;
+  });
+
+  $("#logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+  sb.auth.getSession().then(({ data: { session } }) => { if (session) enter(session.user); });
+
+  /* ---------- ALTYAZI SATIRLARI ---------- */
+  function addSubRow() {
+    const row = mk("div", "sub-row");
+    row.innerHTML = `
+      <label>Dosya <input type="file" class="sub-file" accept=".srt,.vtt"></label>
+      <label>Dil kodu <input type="text" class="sub-lang" value="tr" maxlength="5"></label>
+      <label>Görünen ad <input type="text" class="sub-label" value="Türkçe" maxlength="20"></label>
+      <button type="button" class="ghost danger">SİL</button>`;
+    row.querySelector("button").addEventListener("click", () => row.remove());
+    $("#sub-rows").append(row);
+  }
+  $("#add-sub").addEventListener("click", addSubRow);
+
+  /* ---------- YARDIMCILAR ---------- */
+  function slugify(s) {
+    const map = { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u" };
+    return s.toLocaleLowerCase("tr").replace(/[çğıöşü]/g, c => map[c])
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "film";
+  }
+  const extOf = name => (name.match(/\.([A-Za-z0-9]+)$/) || [, "bin"])[1].toLowerCase();
+
+  function srtToVtt(text) {
+    text = text.replace(/^﻿/, "").replace(/\r+/g, "");
+    if (/^WEBVTT/.test(text)) return text;
+    return "WEBVTT\n\n" + text.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, "$1.$2");
+  }
+
+  function addLog(text) {
+    const line = mk("div", "", text);
+    const bar = mk("div", "prog"); const fill = mk("div"); bar.append(fill);
+    $("#log").append(line, bar);
+    return fill;
+  }
+
+  async function uploadFile(path, body, contentType, onProgress) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error("Oturum bulunamadı, tekrar giriş yap.");
+    const url = `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${path.split("/").map(encodeURIComponent).join("/")}`;
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      xhr.setRequestHeader("Authorization", "Bearer " + session.access_token);
+      xhr.setRequestHeader("apikey", SUPABASE_KEY);
+      xhr.setRequestHeader("x-upsert", "true");
+      xhr.setRequestHeader("Content-Type", contentType || "application/octet-stream");
+      xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) return resolve();
+        let msg = xhr.responseText;
+        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
+        reject(new Error(`Yükleme başarısız (${xhr.status}): ${msg}`));
+      };
+      xhr.onerror = () => reject(new Error("Ağ hatası: yükleme tamamlanamadı."));
+      xhr.send(body);
+    });
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  async function uploadWithLog(label, path, file, contentType) {
+    const fill = addLog(label);
+    const url = await uploadFile(path, file, contentType || file.type, p => { fill.style.width = Math.round(p * 100) + "%"; });
+    fill.style.width = "100%";
+    return url;
+  }
+
+  /* ---------- FİLM EKLE ---------- */
+  $("#film-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("#f-err"), ok = $("#f-ok"), btn = $("#submit-btn");
+    err.hidden = true; ok.hidden = true; $("#log").innerHTML = "";
+
+    const title = $("#f-title").value.trim();
+    const videoFile = $("#f-video-file").files[0];
+    const videoUrlInput = $("#f-video-url").value.trim();
+    if (!videoFile && !videoUrlInput) { err.textContent = "Bir video dosyası seç ya da video adresi yaz."; err.hidden = false; return; }
+
+    btn.disabled = true;
+    try {
+      const id = slugify(title) + "-" + Date.now().toString(36).slice(-4);
+
+      let video = videoUrlInput;
+      if (videoFile) video = await uploadWithLog("Video yükleniyor: " + videoFile.name, `${id}/video.${extOf(videoFile.name)}`, videoFile);
+
+      let poster = $("#f-poster-url").value.trim();
+      const posterFile = $("#f-poster-file").files[0];
+      if (posterFile) poster = await uploadWithLog("Afiş yükleniyor: " + posterFile.name, `${id}/afis.${extOf(posterFile.name)}`, posterFile);
+
+      const subtitles = [];
+      for (const row of document.querySelectorAll(".sub-row")) {
+        const file = row.querySelector(".sub-file").files[0];
+        if (!file) continue;
+        const lang = (row.querySelector(".sub-lang").value.trim() || "tr").toLowerCase();
+        const label = row.querySelector(".sub-label").value.trim() || lang;
+        const vtt = new Blob([srtToVtt(await file.text())], { type: "text/vtt" });
+        const src = await uploadWithLog(`Altyazı yükleniyor (${label})`, `${id}/altyazi-${lang}.vtt`, vtt, "text/vtt");
+        subtitles.push({ lang, label, src });
+      }
+
+      const { error } = await sb.from("films").insert({
+        id, title,
+        year: $("#f-year").value.trim(),
+        director: $("#f-director").value.trim(),
+        category: $("#f-category").value,
+        duration: $("#f-duration").value.trim(),
+        country: $("#f-country").value.trim(),
+        language: $("#f-language").value.trim(),
+        description: $("#f-description").value.trim(),
+        poster, video, subtitles
+      });
+      if (error) throw new Error("Film kaydedilemedi: " + error.message);
+
+      ok.textContent = `"${title}" eklendi. Arşivde görmek için sitede sayfayı yenile.`;
+      ok.hidden = false;
+      e.target.reset();
+      $("#sub-rows").innerHTML = ""; addSubRow();
+      loadList();
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.hidden = false;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* ---------- TMDB ---------- */
+  const TMDB = "https://api.themoviedb.org/3";
+  const TMDB_IMG = "https://image.tmdb.org/t/p/w500";
+  const KEY_STORE = "sonkare_tmdb_key";
+
+  try { $("#tmdb-key").value = localStorage.getItem(KEY_STORE) || ""; } catch (e) {}
+  $("#tmdb-key").addEventListener("change", () => {
+    try { localStorage.setItem(KEY_STORE, $("#tmdb-key").value.trim()); } catch (e) {}
+  });
+
+  async function tmdb(path, params = {}) {
+    const key = $("#tmdb-key").value.trim();
+    if (!key) throw new Error("Önce TMDB API anahtarını yaz.");
+    const url = new URL(TMDB + path);
+    const headers = {};
+    if (key.startsWith("eyJ")) headers.Authorization = "Bearer " + key;   // v4 belirteci
+    else url.searchParams.set("api_key", key);                              // v3 anahtarı
+    for (const [k, v] of Object.entries(params)) if (v !== "" && v != null) url.searchParams.set(k, v);
+    const r = await fetch(url, { headers });
+    if (r.status === 401) throw new Error("TMDB anahtarı geçersiz.");
+    if (!r.ok) throw new Error("TMDB isteği başarısız (" + r.status + ").");
+    return r.json();
+  }
+
+  const regionName = c => { try { return new Intl.DisplayNames(["tr"], { type: "region" }).of(c); } catch (e) { return c; } };
+  const langName = c => { try { return new Intl.DisplayNames(["tr"], { type: "language" }).of(c); } catch (e) { return c; } };
+  const cap = s => s ? s.charAt(0).toLocaleUpperCase("tr") + s.slice(1) : s;
+
+  function tmdbMsg(kind, text) {
+    $("#tmdb-err").hidden = $("#tmdb-ok").hidden = true;
+    const el = $(kind === "err" ? "#tmdb-err" : "#tmdb-ok");
+    el.textContent = text; el.hidden = false;
+  }
+
+  async function tmdbSearch() {
+    const q = $("#tmdb-q").value.trim();
+    const box = $("#tmdb-results");
+    box.innerHTML = "";
+    $("#tmdb-err").hidden = $("#tmdb-ok").hidden = true;
+    if (!q) return tmdbMsg("err", "Aramak için bir film adı yaz.");
+    try {
+      localStorage.setItem(KEY_STORE, $("#tmdb-key").value.trim());
+    } catch (e) {}
+    try {
+      const data = await tmdb("/search/movie", { query: q, language: "tr-TR", year: $("#tmdb-y").value.trim(), include_adult: "false" });
+      if (!data.results.length) return tmdbMsg("err", "Sonuç bulunamadı.");
+      data.results.slice(0, 8).forEach(m => {
+        const item = mk("div", "tmdb-item");
+        if (m.poster_path) { const img = mk("img"); img.src = "https://image.tmdb.org/t/p/w92" + m.poster_path; img.alt = ""; item.append(img); }
+        else item.append(mk("div", "noimg"));
+        const info = mk("div");
+        const b = mk("b", "", m.title);
+        const meta = mk("span", "", [(m.release_date || "").slice(0, 4), m.original_title !== m.title ? m.original_title : ""].filter(Boolean).join(" · "));
+        info.append(b, meta);
+        const pick = mk("button", "ghost", "SEÇ");
+        pick.addEventListener("click", () => tmdbFill(m.id, pick));
+        item.append(info, pick);
+        box.append(item);
+      });
+    } catch (ex) { tmdbMsg("err", ex.message); }
+  }
+
+  async function tmdbFill(id, btn) {
+    btn.disabled = true;
+    try {
+      const m = await tmdb("/movie/" + id, { language: "tr-TR", append_to_response: "credits" });
+      let overview = m.overview;
+      if (!overview) {
+        const en = await tmdb("/movie/" + id, { language: "en-US" });
+        overview = en.overview || "";
+      }
+      const director = (m.credits?.crew || []).filter(c => c.job === "Director").map(c => c.name).join(", ");
+      const countries = (m.production_countries || []).map(c => regionName(c.iso_3166_1));
+      const langs = (m.spoken_languages || []).map(l => cap(langName(l.iso_639_1)));
+      const isTR = (m.production_countries || []).some(c => c.iso_3166_1 === "TR");
+
+      $("#f-title").value = m.title || m.original_title || "";
+      $("#f-year").value = (m.release_date || "").slice(0, 4);
+      $("#f-duration").value = m.runtime ? m.runtime + " dk" : "";
+      $("#f-director").value = director;
+      $("#f-country").value = countries.join(", ");
+      $("#f-language").value = (langs.length ? langs : [cap(langName(m.original_language))]).filter(Boolean).join(", ");
+      $("#f-description").value = overview;
+      $("#f-poster-url").value = m.poster_path ? TMDB_IMG + m.poster_path : "";
+      if (isTR) $("#f-category").value = "Türk Sineması";
+
+      tmdbMsg("ok", `"${m.title}" bilgileri forma dolduruldu. Kategoriyi ve video dosyasını kontrol edip aşağıdan ekle.`);
+      $("#f-title").scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (ex) { tmdbMsg("err", ex.message); }
+    finally { btn.disabled = false; }
+  }
+
+  $("#tmdb-search").addEventListener("click", tmdbSearch);
+  $("#tmdb-q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); tmdbSearch(); } });
+
+  /* ---------- LİSTE ---------- */
+  async function loadList() {
+    const { data, error } = await sb.from("films").select("id, title, category").order("created_at", { ascending: false });
+    const body = $("#film-list");
+    body.innerHTML = "";
+    if (error) { $("#film-empty").textContent = "Liste yüklenemedi: " + error.message; $("#film-empty").hidden = false; return; }
+    $("#film-empty").textContent = "Henüz film eklenmemiş.";
+    $("#film-empty").hidden = data.length > 0;
+    data.forEach(f => {
+      const tr = mk("tr");
+      const del = mk("button", "ghost danger", "ARŞİVDEN SİL");
+      del.addEventListener("click", async () => {
+        if (!confirm(`"${f.title}" arşivden silinsin mi?`)) return;
+        const { error: e } = await sb.from("films").delete().eq("id", f.id);
+        if (e) return alert("Silinemedi: " + e.message);
+        loadList();
+      });
+      const td = mk("td"); td.append(del);
+      tr.append(mk("td", "", f.title), mk("td", "", f.category), td);
+      body.append(tr);
+    });
+  }
+</script>
+
+</body>
+</html>
