@@ -64,6 +64,14 @@
       object-fit: contain;
     }
 
+    /* Gömülü oynatıcı (YouTube, Vimeo, Dailymotion, archive.org) */
+    .embed-frame {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: 0;
+    }
+
     .watch-status {
       margin: 18px 0 0;
       color: #aaa39a;
@@ -280,6 +288,7 @@
   <script src="films.js"></script>
   <script src="ads.js"></script>
   <script src="preroll.js"></script>
+  <script src="embed.js"></script>
   <script src="auth.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
@@ -306,6 +315,16 @@
 
     /* ---------- VİDEO ---------- */
     function startVideo() {
+      // YouTube / Vimeo / Dailymotion / archive.org sayfa linki ise o sitenin resmi oynatıcısını göster.
+      // Film öncesi reklam ve sitedeki altyazılar bu oynatıcılarda çalışmaz (altyazıyı o sitede ekle).
+      const embed = Embed.parse(videoFile);
+      if (embed) {
+        filmTitle.textContent = title || "The Last Frame Film";
+        Embed.mount(document.querySelector(".video-box"), embed, title);
+        watchInfo.textContent = `İyi seyirler. (Oynatıcı: ${embed.provider})`;
+        return;
+      }
+
       // Altyazılar (films.js içindeki "subtitles" alanından)
       const subFilm = films.find(f => f.id === filmId) || films.find(f => f.video && f.video === videoFile);
       const subs = (subFilm && subFilm.subtitles) || [];

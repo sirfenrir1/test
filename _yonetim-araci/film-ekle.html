@@ -157,7 +157,8 @@
           <small>Dosya seç ya da aşağıya hazır bir adres yaz.</small>
         </label>
         <label>…veya video adresi
-          <input type="text" id="f-video-url" placeholder="https://...">
+          <input type="text" id="f-video-url" placeholder="https://... (.mp4 linki ya da YouTube / Vimeo / Dailymotion / archive.org sayfası)">
+          <small id="f-video-hint">Doğrudan .mp4 linki sitenin kendi oynatıcısında oynar. YouTube, Vimeo, Dailymotion veya archive.org sayfa linki ise o sitenin resmi oynatıcısı gömülür (film öncesi reklam ve buradaki altyazılar o zaman gösterilmez).</small>
         </label>
 
         <label>Afiş görseli
@@ -202,6 +203,7 @@
   window.supabase || document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>');
 </script>
 <script src="../supabase-config.js"></script>
+<script src="../embed.js"></script>
 <script>
   /* Safari, bilgisayardan açılan sayfada üst klasördeki ../supabase-config.js dosyasını
      engelleyebiliyor. O zaman aynı (herkese açık) bağlantı bilgileriyle burada oluştur.
@@ -303,6 +305,21 @@
 
   if (SB_READY) sb.auth.getSession().then(({ data: { session } }) => { if (session) enter(session.user); })
     .catch(ex => loginError("Oturum kontrol edilemedi: " + ex.message));
+
+  /* ---------- VİDEO ADRESİ: hangi oynatıcıyla açılacağını göster ---------- */
+  const VIDEO_HINT_DEFAULT = $("#f-video-hint").textContent;
+  $("#f-video-url").addEventListener("input", () => {
+    const v = $("#f-video-url").value.trim();
+    const hint = $("#f-video-hint");
+    hint.style.color = "";
+    if (!v) { hint.textContent = VIDEO_HINT_DEFAULT; return; }
+    if (typeof Embed === "undefined") { hint.textContent = "(embed.js yüklenemedi; link yine de kaydedilir.)"; return; }
+    const em = Embed.parse(v);
+    if (em) { hint.textContent = `✓ ${em.provider} oynatıcısı gömülecek.`; hint.style.color = "#9fc79a"; }
+    else if (/^https?:\/\/(www\.)?(youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com|dai\.ly)\//i.test(v)) {
+      hint.textContent = "⚠ Bu link tanınmadı. Videonun kendi sayfasının linkini kopyala (ör. youtube.com/watch?v=...)."; hint.style.color = "#e3b0ac";
+    } else hint.textContent = "✓ Sitenin kendi oynatıcısında oynatılacak (doğrudan video dosyası olmalı, ör. .mp4).";
+  });
 
   /* ---------- ALTYAZI SATIRLARI ---------- */
   function addSubRow() {
