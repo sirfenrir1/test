@@ -196,16 +196,47 @@
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+  /* jsDelivr açılmazsa (engel, yavaş bağlantı vb.) aynı kütüphaneyi unpkg'den yükle */
+  window.supabase || document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>');
+</script>
 <script src="../supabase-config.js"></script>
 <script>
-  const BUCKET = "filimler ve filmler";
+  /* Safari, bilgisayardan açılan sayfada üst klasördeki ../supabase-config.js dosyasını
+     engelleyebiliyor. O zaman aynı (herkese açık) bağlantı bilgileriyle burada oluştur.
+     Bilgiler değişirse supabase-config.js ile birlikte burayı da güncelle. */
+  (function () {
+    let ok = false;
+    try { ok = typeof sb !== "undefined"; } catch (e) {}
+    if (!ok && window.supabase && window.supabase.createClient) {
+      window.sb = window.supabase.createClient(
+        "https://cjcskhnugtehkczfrfvh.supabase.co",
+        "sb_publishable_P1_VNAFD9xu3WiLXEovJ3Q_nUgW7Jof"
+      );
+    }
+  })();
+</script>
+<script>
+  const R2_FUNCTION = "r2-upload-url";          // Supabase Edge Function adı
+  const R2_MAX_BYTES = 5 * 1024 ** 3;           // R2 tek seferde en fazla 5 GB kabul eder
   const $ = s => document.querySelector(s);
   const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
   /* ---------- GİRİŞ ---------- */
+  function loginError(text) {
+    const e = $("#l-err");
+    e.textContent = text;
+    e.hidden = false;
+  }
+
+  /* Supabase kütüphanesi hiç yüklenemediyse giriş yapılamaz; bunu baştan söyle */
+  const SB_READY = (() => { try { return typeof sb !== "undefined" && !!sb.auth; } catch (e) { return false; } })();
+  if (!SB_READY) loginError("Supabase bağlantı kütüphanesi yüklenemedi. İnternet bağlantını kontrol et; reklam/içerik engelleyici veya VPN açıksa kapatıp sayfayı yenile.");
+
   async function enter(user) {
-    const { data: p } = await sb.from("profiles").select("username, role").eq("id", user.id).maybeSingle();
+    const { data: p, error: pErr } = await sb.from("profiles").select("username, role").eq("id", user.id).maybeSingle();
+    if (pErr) { loginError("Profil okunamadı: " + pErr.message); return; }
     if (!p || p.role !== "admin") {
       await sb.auth.signOut();
       $("#tool").hidden = true; $("#login-card").hidden = false;
@@ -224,9 +255,24 @@
   $("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const err = $("#l-err"); err.hidden = true;
-    const { data, error } = await sb.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-pass").value });
-    if (error) { err.textContent = "E-posta veya şifre hatalı."; err.hidden = false; return; }
-    enter(data.user);
+    if (!SB_READY) return loginError("Supabase bağlantı kütüphanesi yüklenemedi. İnternet bağlantını kontrol et; reklam/içerik engelleyici veya VPN açıksa kapatıp sayfayı yenile.");
+    const btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "GİRİŞ YAPILIYOR…";
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-pass").value });
+      if (error) {
+        const m = error.message || "";
+        return loginError(
+          /email not confirmed/i.test(m) ? "E-posta adresin henüz onaylanmamış. Gelen kutundaki (ve gereksiz kutusundaki) onay linkine tıkla." :
+          /invalid login credentials/i.test(m) ? "E-posta veya şifre hatalı. Emin değilsen \"Şifremi unuttum\" ile yeni şifre al." :
+          "Giriş yapılamadı: " + m);
+      }
+      await enter(data.user);
+    } catch (ex) {
+      loginError("Beklenmeyen hata: " + (ex && ex.message ? ex.message : ex));
+    } finally {
+      btn.disabled = false; btn.textContent = "GİRİŞ YAP";
+    }
   });
 
   /* Şifremi unuttum: yeni şifre sayfası sitenin kök klasöründe (../sifre-yenile.html) */
@@ -255,7 +301,8 @@
 
   $("#logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
 
-  sb.auth.getSession().then(({ data: { session } }) => { if (session) enter(session.user); });
+  if (SB_READY) sb.auth.getSession().then(({ data: { session } }) => { if (session) enter(session.user); })
+    .catch(ex => loginError("Oturum kontrol edilemedi: " + ex.message));
 
   /* ---------- ALTYAZI SATIRLARI ---------- */
   function addSubRow() {
@@ -291,28 +338,34 @@
     return fill;
   }
 
+  /* Dosyalar Cloudflare R2'ye yüklenir.
+     1) Supabase'deki "r2-upload-url" fonksiyonu yönetici olduğunu kontrol edip imzalı bir adres verir.
+     2) Dosya tarayıcıdan doğrudan R2'ye gönderilir (Supabase depolaması kullanılmaz). */
   async function uploadFile(path, body, contentType, onProgress) {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) throw new Error("Oturum bulunamadı, tekrar giriş yap.");
-    const url = `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${path.split("/").map(encodeURIComponent).join("/")}`;
+    if (body.size > R2_MAX_BYTES) throw new Error("Dosya 5 GB'tan büyük; tek seferde yüklenemez. Önce sıkıştır (bkz. R2-KURULUM.md).");
+
+    const { data, error } = await sb.functions.invoke(R2_FUNCTION, { body: { path } });
+    if (error) {
+      let msg = error.message;
+      try { msg = (await error.context.json()).error || msg; } catch (e) {}
+      throw new Error("Yükleme adresi alınamadı: " + msg);
+    }
+
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", url);
-      xhr.setRequestHeader("Authorization", "Bearer " + session.access_token);
-      xhr.setRequestHeader("apikey", SUPABASE_KEY);
-      xhr.setRequestHeader("x-upsert", "true");
+      xhr.open("PUT", data.uploadUrl);
       xhr.setRequestHeader("Content-Type", contentType || "application/octet-stream");
       xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) return resolve();
-        let msg = xhr.responseText;
-        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
-        reject(new Error(`Yükleme başarısız (${xhr.status}): ${msg}`));
+        reject(new Error(`R2 yüklemesi başarısız (${xhr.status}): ${xhr.responseText.slice(0, 300)}`));
       };
-      xhr.onerror = () => reject(new Error("Ağ hatası: yükleme tamamlanamadı."));
+      xhr.onerror = () => reject(new Error("Ağ hatası: R2'ye ulaşılamadı. Bucket'ın CORS ayarını kontrol et (R2-KURULUM.md, Adım 4)."));
       xhr.send(body);
     });
-    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+    return data.publicUrl;
   }
 
   async function uploadWithLog(label, path, file, contentType) {
