@@ -157,6 +157,15 @@
           card.style.setProperty("--c2", f.colors[1]);
           const a = mk("a", "fav-poster");
           a.href = "arsiv.html";
+          // Afiş (arşiv sayfasındakiyle aynı); yüklenemezse renkli kutu ve film adı kalır
+          if (f.poster) {
+            const img = mk("img");
+            img.src = f.poster;
+            img.alt = f.title + " film afişi";
+            img.loading = "lazy";
+            img.onerror = () => img.remove();
+            a.append(img);
+          }
           a.append(mk("span", "poster-year", f.year), mk("span", "fav-title", f.title));
           const rm = mk("button", "fav-remove", "LİSTEDEN ÇIKAR");
           rm.addEventListener("click", async () => {
